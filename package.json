@@ -1,7 +1,13 @@
 {
   "name": "download-excel",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TechNguyen/Hinet-react-download-excel"
+  },
+  "author": "Nguyen Duc Thang",
+  "license": "MIT",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
