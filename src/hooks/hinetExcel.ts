@@ -6,7 +6,9 @@ import { excel } from "../library";
 export function hinetDownloadExcel({ fileName,
     sheet,
     currentRefTable}: HinetExcel ) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const [payload,setPayload] = useState({} as HinetExcel);
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
         setPayload({
             fileName,
@@ -15,5 +17,6 @@ export function hinetDownloadExcel({ fileName,
         })
     }, [fileName,sheet,currentRefTable])
         
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     return useMemo(() => excel(payload), [payload]);
 }

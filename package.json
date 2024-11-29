@@ -1,7 +1,10 @@
 {
-  "name": "download-excel",
-  "version": "0.1.0",
+  "name": "hinet-excel-master",
+  "version": "0.1.3",
   "private": false,
+  "main": "build/static/js/main.js",    
+  "module": "build/static/js/main.js",  
+  "types": "build/static/js/main.d.ts",      
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TechNguyen/Hinet-react-download-excel"

@@ -3,7 +3,7 @@ import { IProperties } from "./interface/hinet-react-export-table-excels";
 import { hinetDownloadExcel } from "./hooks/hinetExcel";
 import { downloadExcel } from "./library";
 
-const DownloadTableExcel: FC<IProperties> = ({
+const DownloadHinetTableExcel: FC<IProperties> = ({
     currentRefTable,
     fileName,
     sheet,
@@ -17,4 +17,4 @@ const DownloadTableExcel: FC<IProperties> = ({
     return <span onClick={onDownload}>{child}</span>;
 };
 
-export { DownloadTableExcel, hinetDownloadExcel, downloadExcel };
+export { DownloadHinetTableExcel, hinetDownloadExcel, downloadExcel };
