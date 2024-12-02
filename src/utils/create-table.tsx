@@ -1,5 +1,4 @@
 import { renderToString } from "react-dom/server";
-
 const acceptTypes = ["string", "number", "boolean"];
 
 export interface ITablePayloadEx {
