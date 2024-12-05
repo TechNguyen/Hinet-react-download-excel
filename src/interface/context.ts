@@ -1,6 +1,7 @@
 export interface HinetContext {
     worksheet: string,
-    table: string
+    table: string,
+    arrBuff?: ArrayBuffer | null
 }
 
 
