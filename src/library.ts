@@ -6,70 +6,144 @@ import * as XLSX from 'xlsx';
 import React from "react";
 import { toast } from "react-toastify";
 type TableData = string[][]
-const readExcelFromTemplate = (fileName: string, context: HinetContext): boolean => {
-  if (!context || !context.arrBuff) {
-    if (!context.table) {
-      toast.error('HTML table lỗi không nhận được!');
-      return false;
-    }
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(context.table, 'text/html');
-    const table = doc.querySelector('table');
-    if (!table) {
-      toast.error('Không tìm thấy bảng trong HTML!');
-      return false;
-    }
-    const rows = table.querySelectorAll('tr');
-    const tableData: TableData = [];
 
-    rows.forEach((row) => {
-      const rowData: string[] = [];
-      const cells = row.querySelectorAll('td, th');  // Lấy tất cả các ô (th và td)
-      cells.forEach((cell) => {
-        rowData.push(cell.textContent?.trim() || '');  // Lấy nội dung của ô và loại bỏ khoảng trắng thừa
+
+
+const readExcelFromTemplate = (fileName: string, context: HinetContext): boolean => {
+
+  try {
+
+    if (!context || !context.arrBuff) {
+      if (!context.table) {
+        toast.error('HTML table lỗi không nhận được!');
+        return false;
+      }
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(context.table, 'text/html');
+      const table = doc.querySelector('table');
+      if (!table) {
+        toast.error('Không tìm thấy bảng trong HTML!');
+        return false;
+      }
+      const rows = table.querySelectorAll('tr');
+      const tableData: TableData = [];
+  
+      rows.forEach((row) => {
+        const rowData: string[] = [];
+        const cells = row.querySelectorAll('td, th');  
+        cells.forEach((cell) => {
+          rowData.push(cell.textContent?.trim() || '');
+        });
+        tableData.push(rowData);
       });
-      tableData.push(rowData);
-    });
-    // Tạo workbook (tệp Excel) từ dữ liệu bảng
-    const wse = XLSX.utils.aoa_to_sheet(tableData);  // Chuyển đổi mảng mảng thành sheet
-    const wbe = XLSX.utils.book_new();  // Tạo workbook mới
-    XLSX.utils.book_append_sheet(wbe, wse, fileName);  // Thêm sheet vào workbook
-    XLSX.writeFile(wbe, fileName);
-    return true;
-  } 
-  else {
-    const wb = XLSX.read(context.arrBuff, { type: 'array' });
-    const sheetName = wb.SheetNames[0];
-    const ws = wb.Sheets[sheetName];
-    const parse = new DOMParser();
-    const doc = parse.parseFromString(context.table, 'text/html');
-    const tbody = doc.querySelector('tbody');
-    const tableData: TableData = [];
-    const rows = tbody?.querySelectorAll('tr');
-    rows?.forEach(r => {
-      const rowData :string[] = [];
-      const cells = r.querySelectorAll('td');
-      cells.forEach(c => {
-        rowData.push(c.textContent?.trim() || "");
-      })
-      tableData.push(rowData);
-    })
-    let rowIndex = 2;
-    tableData.forEach((rowData) => {
-      rowData.forEach((cellDt,colIndex ) => {
-        const cellAddress = { r: rowIndex, c: colIndex }; 
-        const cellRef = XLSX.utils.encode_cell(cellAddress);
-        if (!ws[cellRef]) {
-          ws[cellRef] = { v: cellDt };
-        } else {
-          console.log(`Ô ${cellRef} đã có dữ liệu, bỏ qua hoặc cập nhật.`);
+      const wse = XLSX.utils.aoa_to_sheet(tableData);  
+      const wbe = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wbe, wse, fileName);  
+      XLSX.writeFile(wbe, fileName);
+      return true;
+    } 
+    else {
+      const wb = XLSX.read(context.arrBuff, { type: 'array' });
+      const sheetName = wb.SheetNames[0];
+      debugger
+      const ws = wb.Sheets[sheetName];
+      const parse = new DOMParser();
+      const doc = parse.parseFromString(context.table, 'text/html');
+      const tbody = doc.querySelector('tbody');
+
+      const sheetData = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true });
+
+     // Giả sử bạn đã biết dòng và cột bắt đầu và kết thúc
+      const startRow = 5; // Dòng bắt đầu
+      const endRow = 102;  // Dòng kết thúc
+      const startCol = 0; // Cột bắt đầu (0-based index)
+      const endCol = 2;   // Cột kết thúc (0-based index)
+
+      // Lấy dữ liệu từ các hàng trong tbody
+      const tableData: TableData = [];
+      const rows = tbody?.querySelectorAll('tr');
+      rows?.forEach((r, rowIndex) => {
+        const rowData: string[] = [];
+        const cells = r.querySelectorAll('td');
+        cells.forEach((c) => {
+          rowData.push(c.textContent?.trim() || "");
+        });
+        tableData.push(rowData);
+      });
+
+
+      
+
+
+      for (let colIndex = startCol; colIndex <= endCol; colIndex++) {
+        for (let rowIdx = 0; rowIdx <= startRow - 1; rowIdx++) {
+          const cellAddress = { r:  rowIdx, c: colIndex }; // Địa chỉ ô Excel
+          const cellRef = XLSX.utils.encode_cell(cellAddress);
+          const existingStyle = ws[cellRef];
+          console.log(ws[cellRef]);
+          
+          if (existingStyle) {
+            ws[cellRef] = {
+              h: existingStyle?.h,
+              r: existingStyle?.r,
+             
+            }
+
+            console.log(ws[cellRef]);
+            
+          }
         }
-        rowIndex++;
-      })
-    })
-    XLSX.writeFile(wb,fileName);
-    return true;
+      }
+
+    // Duyệt qua các ô trong Excel và thêm dữ liệu từ tableData nếu ô đó trống
+    tableData.forEach((rowData, rowIndex) => {
+      for (let colIndex = startCol; colIndex <= endCol; colIndex++) {
+      const cellAddress = { r: startRow + rowIndex, c: colIndex }; // Địa chỉ ô Excel
+      const cellRef = XLSX.utils.encode_cell(cellAddress);
+      // Nếu ô chưa có dữ liệu, thêm dữ liệu từ tableData
+      const cellValue = rowData[colIndex - startCol];
+      if (!ws[cellRef] || !ws[cellRef].v) {
+        const cellStyle = ws[cellRef] ? ws[cellRef].s : null;
+        // Chỉ thêm nếu ô chưa có dữ liệu hoặc dữ liệu trống
+          if (cellValue !== undefined && cellValue !== null && cellValue !== "") {
+            ws[cellRef] = {
+              v: cellValue,
+              s: cellStyle
+            }; // Thêm dữ liệu vào ô trống
+          }
+      } else {
+        const existingStyle = ws[cellRef];
+        ws[cellRef] = ws[cellRef];
+    }
+      }
+    });
+
+
+
+    const updatedArrayBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+
+
+
+    const blob = new Blob([updatedArrayBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const downloadUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = 'updated_file.xlsx';
+    document.body.appendChild(a);
+    a.click();
+  
+    // Giải phóng bộ nhớ URL
+    URL.revokeObjectURL(downloadUrl);
+
+  //update nội dung và xuất file
+  // XLSX.writeFile(wb, fileName);
+  return true;
+    }
+  } catch (error) {
+    return false;
   }
+  
+
 }
 
 
